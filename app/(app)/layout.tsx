@@ -11,12 +11,25 @@ import {
   Share2Icon,
   UploadIcon,
   ImageIcon,
+  Donut,
+  Trash2,
+  Replace,
+  PaintBucket,
+  ImageMinus,
+  PaintRoller
 } from "lucide-react";
 
 const sidebarItems = [
   { href: "/home", icon: LayoutDashboardIcon, label: "Home Page" },
   { href: "/social-share", icon: Share2Icon, label: "Social Share" },
   { href: "/video-upload", icon: UploadIcon, label: "Video Upload" },
+  { href:"/generative-fill",icon:PaintBucket ,label: "Generative Fill"},
+  { href:"/generative-remove",icon:Trash2 ,label: "Generative Remove"},
+  { href:"/generative-replace",icon:Replace ,label: "Generative Replace"},
+  { href: "/generative-restore", icon: Donut, label: "AI Enhance" },
+  { href: "/remove-bg", icon: ImageMinus, label: "Remove Background" },
+  { href: "/image-recolor", icon: PaintRoller, label: "Image Recolor" },
+
 ];
 
 export default function AppLayout({
@@ -62,7 +75,7 @@ export default function AppLayout({
             <div className="flex-1">
               <Link href="/" onClick={handleLogoClick}>
                 <div className="btn btn-ghost normal-case text-2xl font-bold tracking-tight cursor-pointer">
-                  Cloudinary Showcase
+                  Chitron AI - Edit limitlessly
                 </div>
               </Link>
             </div>
