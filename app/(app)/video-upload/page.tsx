@@ -1,14 +1,18 @@
 "use client"
-import React, {useState} from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
+import VideoCard from '@/components/VideoCard'
+import { Video } from '@/types'
 
 function videoUpload() {
   const [file, setFile] = useState<File | null>(null)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [isUploading, setIsUploading] = useState(false)
-
+  const [videos, setVideos] = useState<Video[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const router = useRouter()
 
@@ -20,8 +24,6 @@ function videoUpload() {
       return
     }
     if (file.size > MAX_FILE_SIZE) {
-
-      // add notification
       alert("File size exceeds the limit of 70MB")
       return
     }
@@ -29,7 +31,7 @@ function videoUpload() {
     const formData = new FormData()
     formData.append("file", file)
     formData.append("title", title)
-    formData.append("description", description) 
+    formData.append("description", description)
     formData.append("originalSize", file.size.toString())
 
     try {
@@ -37,15 +39,44 @@ function videoUpload() {
       if (response.status !== 200 || !response.data.success) {
         throw new Error("Failed to upload video")
       }
-
-    }catch(error){
+      // Refresh the video list after successful upload
+      fetchVideos()
+    } catch (error) {
       console.log(error)
-
-    }finally{
+    } finally {
       setIsUploading(false)
     }
-
   }
+
+  const fetchVideos = async () => {
+    try {
+      const response = await axios.get('/api/videos')
+      if (Array.isArray(response.data)) {
+        setVideos(response.data)
+      } else {
+        throw new Error('Unexpected response format')
+      }
+    } catch (error) {
+      console.log(error)
+      setError('Error loading videos')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchVideos()
+  }, [])
+
+  const handleDownload = useCallback((url: string, title: string) => {
+    const link = document.createElement("a")
+    link.href = url
+    link.setAttribute("download", `${title}.mp4`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }, [])
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Upload Video</h1>
@@ -92,10 +123,31 @@ function videoUpload() {
           {isUploading ? "Uploading..." : "Upload Video"}
         </button>
       </form>
+
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Uploaded Videos</h2>
+        {loading ? (
+          <div>Loading...</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {videos.length === 0 ? (
+              <div className="text-center text-lg text-gray-500">
+                No videos available
+              </div>
+            ) : (
+              videos.map((video) => (
+                <VideoCard
+                  key={video.id}
+                  video={video}
+                  onDownload={handleDownload}
+                />
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
-  );
+  )
 }
 
-
-
-export default videoUpload;
+export default videoUpload
